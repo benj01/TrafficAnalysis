@@ -1,10 +1,8 @@
-# [Traffic Camera: Unwarp image](TrafficCamera_Unwarp_Image.md)
-
-## Requirements
+# Requirements
 
 Install [Miniconda](https://conda.io/miniconda.html)
 
-## Installation
+# Installation
 
 ```
 conda env create -f environment.yml
