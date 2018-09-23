@@ -1,0 +1,13 @@
+name: TrafficAnalysis
+channels:
+  - defaults
+dependencies:
+  - cython
+  - matplotlib
+  - numpy
+  - keras
+  - nb_conda
+  - python=3.6
+  - pip:
+    - opencv-python
+    - opencv-contrib-python # for trackers
