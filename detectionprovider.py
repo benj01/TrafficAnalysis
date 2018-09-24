@@ -2,7 +2,7 @@ from PIL import Image
 
 from utils import *
 
-class BboxProvider:
+class DetectionProvider:
     def __init__(self, yolo, min_confidence = 0.6,  classes = ["car", "truck", "bus", "motorbike"], padding = 5):
         self.yolo = yolo
         self.min_confidence = min_confidence
@@ -20,7 +20,7 @@ class BboxProvider:
         duplicates = []
         for i in range(len(boxes)):
             for j in range(i+1, len(boxes)):
-                if box_iou(boxes[i]["bbox"], boxes[j]["bbox"]) >= 0.2:
+                if iou(boxes[i]["bbox"], boxes[j]["bbox"]) >= 0.2:
                     duplicates.append(boxes[j])
 
         for duplicate in duplicates:
