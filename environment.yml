@@ -6,6 +6,7 @@ dependencies:
   - matplotlib
   - numpy
   - keras
+  - tensorflow-gpu
   - nb_conda
   - python=3.6
   - pip:
