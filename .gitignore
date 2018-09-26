@@ -1,6 +1,8 @@
 .ipynb_checkpoints/
 *.mp4
+*.avi
 *.jpg
 *.png
 *.webm
 *.h5
+__pycache__/

@@ -4,6 +4,10 @@ from random import randint
 def random_color():
     return (randint(0,255),randint(0,255),randint(0,255))
 
+def avg_bbox(a,b):
+    return ((a[0] + b[0])//2, (a[1] + b[1])//2,(a[2] + b[2])//2,(a[3] + b[3])//2)
+                
+
 def show_bbox(bbox, frame,color,width=2):
     p1 = (int(bbox[0]),int(bbox[1]))
     p2 = (int(bbox[2]) + p1[0],int(bbox[3])+ p1[1])
@@ -26,13 +30,14 @@ def create_trackers(frame, bboxes, tracker = cv2.TrackerCSRT_create):
     for bbox in bboxes:
         t = tracker()
         t.init(frame,bbox)
-        trackers.append({"tracker" : t, "color" : (0, 255, 0)})
+        trackers.append({"tracker" : t, "color" : (0, 255, 0), "boxes": [bbox]})
     return trackers
 
 def update_trackers(trackers, frame):
     successes, bboxes = [], []
     for t in trackers:
         success,bbox = t["tracker" ].update(frame)
+        t["boxes"].append(bbox)
         successes.append(success)
         bboxes.append(bbox)
         
@@ -60,9 +65,14 @@ def center(bbox):
     p1 = (int(bbox[0]),int(bbox[1]))
     return (int(bbox[2] / 2)  + p1[0],int(bbox[3]/ 2)+ p1[1])
 
-def inside_frame(x, shape, padding):
+def point_inside_frame(x, shape, padding):
     return x[0] >= padding and x[1] >= padding and x[0] + padding <= shape[1] and x[1] + padding <= shape[0]
 
+def inside_frame(a, b):
+    return a[0] >= b[0] and a[1] >= b[1] and a[0] + a[2] <= b[0] + b[2] and a[1] + a[3]  <= b[1] + b[3]
+
+def bbox_from_frame(frame, padding):
+    return (padding,padding,frame.shape[1]- 2 * padding, frame.shape[0]-2 * padding)
 
 # switches axes and computes width and height
 def yolo_box_to_bbox(box, padding):

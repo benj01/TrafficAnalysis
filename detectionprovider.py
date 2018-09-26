@@ -3,15 +3,15 @@ from PIL import Image
 from utils import *
 
 class DetectionProvider:
-    def __init__(self, yolo, min_confidence = 0.6,  classes = ["car", "truck", "bus", "motorbike"], padding = 5):
+    def __init__(self, yolo, min_confidence = 0.6,  classes = ["car", "truck", "bus", "motorbike"], inflate = 0):
         self.yolo = yolo
         self.min_confidence = min_confidence
         self.classes = classes
-        self.padding = padding
+        self.inflate = inflate
         
     def detect_boxes(self, frame, n):
         boxes = [ 
-            { "class": x[0], "confidence": x[1], "bbox":  yolo_box_to_bbox(x[2], self.padding), "n": n}
+            { "class": x[0], "confidence": x[1], "bbox":  yolo_box_to_bbox(x[2], self.inflate), "n": n}
             for x in self.yolo.detect_image(Image.fromarray(frame)) 
             if x[1] >= self.min_confidence and x[0] in self.classes
         ] 
