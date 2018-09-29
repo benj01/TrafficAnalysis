@@ -8,6 +8,7 @@ dependencies:
   - keras
   - tensorflow-gpu
   - nb_conda
+  - tqdm
   - python=3.6
   - pip:
     - opencv-python
