@@ -8,8 +8,9 @@ dependencies:
   - keras
   - tensorflow-gpu
   - nb_conda
-  - tqdm
   - python=3.6
   - pip:
+    - Pillow
+    - tqdm
     - opencv-python
     - opencv-contrib-python # for trackers
