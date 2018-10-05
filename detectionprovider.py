@@ -8,9 +8,8 @@ def yolo_box_to_bbox(box, padding):
     return (box[1] - padding, box[0]- padding,box[3] - box[1] + 2*padding, box[2] - box[0]+ 2*padding)
 
 class DetectionProvider:
-    def __init__(self, yolo, min_confidence = 0.6,  classes = ["car", "truck", "bus", "motorbike"], inflate = 0):
+    def __init__(self, yolo,  classes = ["car", "truck", "bus", "motorbike"], inflate = 0):
         self.yolo = yolo
-        self.min_confidence = min_confidence
         self.classes = classes
         self.inflate = inflate
         
@@ -18,7 +17,7 @@ class DetectionProvider:
         boxes = [ 
             BoundingBox(yolo_box_to_bbox(x[2], self.inflate), n, x[0], x[1])
             for x in self.yolo.detect_image(Image.fromarray(frame)) 
-            if x[1] >= self.min_confidence and x[0] in self.classes
+            if x[0] in self.classes
         ] 
 
     

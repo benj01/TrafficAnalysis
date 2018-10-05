@@ -6,8 +6,9 @@ dependencies:
   - matplotlib
   - numpy
   - keras
-  - tensorflow-gpu
+  - tensorflow-gpus
   - nb_conda
+  - pandas
   - python=3.6
   - pip:
     - Pillow
