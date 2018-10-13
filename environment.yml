@@ -10,6 +10,7 @@ dependencies:
   - nb_conda
   - pandas
   - python=3.6
+  - ipywidgets
   - pip:
     - Pillow
     - tqdm
