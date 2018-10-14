@@ -1,5 +1,5 @@
 from PIL import Image
-from tracking import Detection
+from CVTracker import Detection
 
 # switches axes and computes width and height
 def yolo_box_to_bbox(box, padding):

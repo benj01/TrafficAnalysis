@@ -1,6 +1,6 @@
 import numpy as np
 from uuid import uuid4
-from tracking import random_color
+from common import random_color
 
 class TrackState:
     Tentative = 1

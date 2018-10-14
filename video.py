@@ -1,5 +1,5 @@
 import cv2
-from os.path import join, exists
+
 
 class VideoStreamReader:
     def __init__(self, filename, seconds_count=None, seconds_skip=0, width=None, height=None):
@@ -37,47 +37,6 @@ class VideoStreamReader:
 
     def release(self):
         self.capture.release()
-
-
-class FileListReader:
-    def __init__(self, directory, filename_template = 'img{0:05d}.jpg',  seconds_count=None, seconds_skip=0, width=None, height=None, fps=30):
-        self.fps = fps
-        self.seconds_skip = seconds_skip
-        self.seconds_count = seconds_count
-        self.frame_skip = int(self.fps * seconds_skip)
-        self.frame_count = int(self.fps * seconds_count) if seconds_count is not None else None
-
-        self.directory = directory
-        self.filename_template = filename_template
-        self.frame_no = self.frame_skip + 1
-        impath = join(self.directory, self.filename_template.format(self.frame_no))
-        img = cv2.imread(impath)
-
-        self.width = img.shape[1] if width is None else width
-        self.height = img.shape[0] if height is None else height
-
-        self.requires_resize = self.width != img.shape[1] or \
-            self.height != img.shape[0]
-
-
-    def next_frame(self):
-        if self.frame_count is not None and self.frame_no >= self.frame_skip + self.frame_count:
-            return None
-
-        impath = join(self.directory, self.filename_template.format(self.frame_no))
-        if not exists(impath):
-            return None
-        frame = cv2.imread(impath)
-        self.frame_no += 1
-
-        if self.requires_resize:
-            frame = cv2.resize(frame, (self.width, self.height))
-
-        frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-        return frame
-
-    def release(self):
-        pass
 
 
 class VideoStreamWriter:

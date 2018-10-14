@@ -1,60 +1,56 @@
 from detectionprovider import DetectionProvider
-from tracking import Detection
+from common import Detection, limit_gpu_memory
+from optparse import OptionParser
 from IOUTracker import IOUTracker
-from video import VideoStreamReader, VideoStreamWriter, FileListReader
+from video import VideoStreamReader, VideoStreamWriter
 from yolo import YOLO
 from tqdm import tqdm
-import numpy as np
-import tensorflow as tf
-from keras.backend.tensorflow_backend import set_session
-
 
 if __name__ == "__main__":
-    filename = "4K Traffic camera video - free download now!-MNn9qKG2UFI.webm"
-    seconds_skip = 0  # number of seconds to skip
-    seconds_count = 60  # number of seconds to process
-    # reader = FileListReader("/home/xmichaelx/Pobrane/MVI_20011/", seconds_count=seconds_count, seconds_skip=seconds_skip, fps=30)
-    config = tf.ConfigProto()
-    config.gpu_options.per_process_gpu_memory_fraction = 0.7
-    set_session(tf.Session(config=config))
+    limit_gpu_memory(0.7)
+    parser = OptionParser()
+    parser.add_option("-i", "--input", dest="input")
+    parser.add_option("-o", "--output", dest="output")
+    parser.add_option("-p", "--padding", dest="padding")
+    parser.add_option("--width", dest="width")
+    parser.add_option("--height", dest="height")
+    parser.add_option("-s", "--skip", dest="skip")
+    parser.add_option("-c", "--count", dest="count")
 
-    yolo = YOLO()
+    (options, args) = parser.parse_args()
+    filename = options.input
 
-    reader = VideoStreamReader(filename, seconds_count=seconds_count, seconds_skip=seconds_skip, width=1920, height=1080)
-    writer = VideoStreamWriter("iou.avi", width=reader.width, height=reader.height, fps=reader.fps)
-    empty_writer = VideoStreamWriter("iou_empty.avi", width=reader.width, height=reader.height, fps=reader.fps)
+    yolo = YOLO(score=0.3)
+    reader = VideoStreamReader(filename, seconds_count=(options.count), seconds_skip=int(options.skip),
+                               width=int(options.width), height=int(options.height))
+
+    writer = VideoStreamWriter(options.output, width=reader.width, height=reader.height, fps=reader.fps)
     detection_provider = DetectionProvider(yolo)
-    frame_bbox = Detection.from_frame((reader.width,reader.height), 80)
+    frame_bbox = Detection.from_frame((reader.width,reader.height), int(options.padding))
     tracker = IOUTracker()
 
     pbar = tqdm(total=reader.frame_count - reader.frame_skip)
 
     while True:
         frame = reader.next_frame()
-
         if frame is None:
             break
 
         pbar.update()
-
         detections = detection_provider.detect_boxes(frame, reader.frame_no)
+
         # for detection in detections:
         #     detection.show(frame, (255, 255, 255))
 
         tracker.predict()
         tracker.update(detections, frame_bbox)
 
-        zero_frame = np.zeros_like(frame)
         for track in tracker.active_tracks:
-            track.show_history(zero_frame)
             track.show_history(frame)
 
-
-        frame_bbox.show(frame, (0,0,0))
+        frame_bbox.show(frame)
         writer.write(frame)
-        empty_writer.write(zero_frame)
 
     pbar.close()
     reader.release()
     writer.release()
-    empty_writer.release()
