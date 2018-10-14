@@ -3,7 +3,7 @@ from uuid import uuid4
 import numpy as np
 from common import random_color, Detection
 
-def create_tracks(frame, bboxes, tracker=cv2.TrackerCSRT_create):
+def create_tracks(frame, bboxes, tracker):
     return [ Track(frame, bbox,tracker=tracker) for bbox in bboxes]
 
 def update_tracks(trackers, frame, frame_no):
@@ -12,7 +12,7 @@ def update_tracks(trackers, frame, frame_no):
         trackers.remove(t)
 
 class Track:
-    def __init__(self, frame, bbox, color=None,  tracker=cv2.TrackerCSRT_create):
+    def __init__(self, frame, bbox, color=None,  tracker =None):
         self.id = uuid4()
         self.tracker = tracker()
         self.tracker.init(frame, tuple(bbox.tlwh.astype(int)))
@@ -38,10 +38,17 @@ class Track:
         return self.bboxes[-n:]
 
     def get_max_iou(self, tracks):
-        ious =  np.array([ self.last_box().iou(t.last_box()) for t in tracks])
+        ious = self.get_ious(tracks)
         i = np.argmax(ious)
         return i, ious[i]
 
+    def get_max_iou_from_detections(self, detections):
+        ious = np.array([ self.last_box().iou(d) for d in detections])
+        i = np.argmax(ious)
+        return i, ious[i]
+
+    def get_ious(self, tracks):
+        return np.array([ self.last_box().iou(t.last_box()) for t in tracks])
 
     def show_history(self, frame, width = 2, n = 30):
         self.last_box().show(frame, self.color, width=width)
@@ -50,7 +57,7 @@ class Track:
             b.show_center(frame, self.color, width=width)
 
 class CVTracker:
-    def __init__(self, tracker_create, frame_bbox, min_iou = 0.3, min_iou_to_discard = 0.2, fps_update = 5):
+    def __init__(self, tracker_create, frame_bbox, min_iou=0.3, min_iou_to_discard = 0.2,fps_update=5):
         self.tracker_create = tracker_create
         self.old_tracks = []
         self.new_tracks = []
@@ -66,7 +73,7 @@ class CVTracker:
         update_tracks(self.new_tracks, frame, self.frame_no)
 
     def provide_detections(self, frame, detections):
-        detected_boxes = [x for x in detections if x.is_inside(self.frame_bbox)]
+        detected_boxes = [x for x in detections if x.is_inside(self.frame_bbox) and x.confidence > 0.6]
         self.old_tracks += self.new_tracks
         self.new_tracks = create_tracks(frame, detected_boxes, tracker=self.tracker_create)
 
@@ -86,10 +93,11 @@ class CVTracker:
 
         self.old_tracks += matched_tracks  # add matched tracks to old
 
+        # remove unmatched with sufficient high iou
         for track in self.new_tracks:
             if len(self.old_tracks) > 0:
                 _, iou = track.get_max_iou(self.old_tracks)
-                if iou > self.min_iou_to_discard:  # remove unmatched with sufficient high iou
+                if iou > self.min_iou_to_discard:
                     self.new_tracks.remove(track)
 
         # checking for exiting bboxes if their center is outside

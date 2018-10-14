@@ -6,7 +6,7 @@ dependencies:
   - matplotlib
   - numpy
   - keras
-  - tensorflow-gpus
+  - tensorflow-gpu
   - nb_conda
   - pandas
   - python=3.6
@@ -15,4 +15,4 @@ dependencies:
     - Pillow
     - tqdm
     - opencv-python
-    - opencv-contrib-python # for trackers
+    - opencv-contrib-python

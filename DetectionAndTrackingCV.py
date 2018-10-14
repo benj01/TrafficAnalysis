@@ -37,8 +37,8 @@ if __name__ == "__main__":
     reader = VideoStreamReader(options.input, seconds_count=int(options.count), seconds_skip=int(options.skip),
                                width=width, height=height)
     writer = VideoStreamWriter(options.output, width=reader.width, height=reader.height, fps=reader.fps)
-    yolo = YOLO()
-    detection_provider = DetectionProvider(yolo, inflate=3)
+    yolo = YOLO(score=0.4)
+    detection_provider = DetectionProvider(yolo, inflate=0)
 
     frame_bbox = Detection.from_frame((width,height), padding)
     tracker = CVTracker(tracker, frame_bbox)
@@ -50,15 +50,15 @@ if __name__ == "__main__":
 
         pbar.update()
 
-        tracker.propagate(frame)
         if tracker.is_detection_time():
             detections = detection_provider.detect_boxes(frame, reader.frame_no)
 
             # for detection in detections:
             #     detection.show(frame, (255, 255, 255))
 
-            tracker.provide_detections(detections)
+            tracker.provide_detections(frame, detections)
 
+        tracker.propagate(frame)
         tracker.update()
 
         for t in tracker.old_tracks + tracker.new_tracks:
